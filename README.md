@@ -33,7 +33,15 @@ Java标准库实例。考虑到Java标准库的API设计过程中已经应用了
 
 相关模式。设计模式不是孤立存在的，一个具体的设计模式往往和其它设计模式之间存在某些联系。这部分会描述相应设计模式与其它设计模式之间存在的关系。这当中可能涉及GOF的设计模式，这类设计模式并不在本书的讨论范围之内。有需要的读者，请自行参考相关书籍。
 
-本书的源码可以从http://github.com/Viscent/javamtp下载或博文视点官网http://www.broadview.com.cn相关图书页面。
+本书的源码可以从
+
+http://github.com/Viscent/javamtp
+
+下载或博文视点官网
+
+http://www.broadview.com.cn
+
+相关图书页面。
 
 ##【目录】
 
