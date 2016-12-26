@@ -68,7 +68,7 @@ public class NestedMonitorLockoutExample {
 
 		private final Blocker blocker = new ConditionVarBlocker();
 
-		public synchronized String xGuarededMethod(final String message) {
+		public String xGuarededMethod(final String message) {
 			GuardedAction<String> ga = new GuardedAction<String>(stateBeOK) {
 
 				@Override
@@ -86,7 +86,7 @@ public class NestedMonitorLockoutExample {
 			return result;
 		}
 
-		public synchronized void xStateChanged() {
+		public void xStateChanged() {
 			try {
 				blocker.signalAfter(new Callable<Boolean>() {
 
