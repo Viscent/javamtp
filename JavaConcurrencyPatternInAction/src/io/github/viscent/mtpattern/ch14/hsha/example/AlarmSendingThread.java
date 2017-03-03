@@ -94,8 +94,8 @@ public class AlarmSendingThread extends AbstractTerminatableThread {
 			prevSubmittedCounter = submittedAlarmRegistry.putIfAbsent(type.toString()
 			    + ':' + id + '@' + extraInfo, new AtomicInteger(0));
 			if (null == prevSubmittedCounter) {
-				terminationToken.reservations.incrementAndGet();
 				alarmQueue.put(alarmInfo);
+				terminationToken.reservations.incrementAndGet();
 			} else {
 
 				// 故障未恢复，不用重复发送告警信息给服务器，故仅增加计数
