@@ -13,93 +13,93 @@ http://www.broadview.com.cn/27006
 
 package io.github.viscent.mtpattern.ch4.gs;
 
-import io.github.viscent.util.Debug;
-
 import java.util.concurrent.Callable;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import io.github.viscent.util.Debug;
+
 public class ConditionVarBlocker implements Blocker {
-	private final Lock lock;
+    private final Lock lock;
+    private final Condition condition;
+    private final boolean allowAccess2Lock;
 
-	private final Condition condition;
+    public ConditionVarBlocker(Lock lock) {
+        this(lock, true);
+    }
 
-	private final boolean allowAccess2Lock;
+    private ConditionVarBlocker(Lock lock, boolean allowAccess2Lock) {
+        this.lock = lock;
+        this.allowAccess2Lock = allowAccess2Lock;
+        this.condition = lock.newCondition();
+    }
 
-	public ConditionVarBlocker(Lock lock) {
-		this(lock, true);
-	}
+    public ConditionVarBlocker() {
+        this(false);
+    }
 
-	private ConditionVarBlocker(Lock lock, boolean allowAccess2Lock) {
-		this.lock = lock;
-		this.allowAccess2Lock = allowAccess2Lock;
-		this.condition = lock.newCondition();
-	}
+    public ConditionVarBlocker(boolean allowAccess2Lock) {
+        this(new ReentrantLock(), allowAccess2Lock);
+    }
 
-	public ConditionVarBlocker() {
-		this(false);
-	}
+    public Lock getLock() {
+        if (allowAccess2Lock) {
+            return this.lock;
+        }
+        throw new IllegalStateException("Access to the lock disallowed.");
+    }
 
-	public ConditionVarBlocker(boolean allowAccess2Lock) {
-		this(new ReentrantLock(), allowAccess2Lock);
-	}
+    public <V> V callWithGuard(GuardedAction<V> guardedAction)
+            throws Exception {
+        lock.lockInterruptibly();
+        V result;
+        try {
+            final Predicate guard = guardedAction.guard;
+            while (!guard.evaluate()) {
+                Debug.info("waiting...");
+                condition.await();
+            }
+            result = guardedAction.call();
+            return result;
+        } finally {
+            lock.unlock();
+        }
+    }
 
-	public Lock getLock() {
-		if (allowAccess2Lock) {
-			return this.lock;
-		}
-		throw new IllegalStateException("Access to the lock disallowed.");
-	}
+    public void signalAfter(Callable<Boolean> stateOperation) throws Exception {
+        lock.lockInterruptibly();
+        try {
+            if (stateOperation.call()) {
+                condition.signal();
+            }
+        } finally {
+            lock.unlock();
+        }
 
-	public <V> V callWithGuard(GuardedAction<V> guardedAction) throws Exception {
-		lock.lockInterruptibly();
-		V result;
-		try {
-			final Predicate guard = guardedAction.guard;
-			while (!guard.evaluate()) {
-				Debug.info("waiting...");
-				condition.await();
-			}
-			result = guardedAction.call();
-			return result;
-		} finally {
-			lock.unlock();
-		}
-	}
+    }
 
-	public void signalAfter(Callable<Boolean> stateOperation) throws Exception {
-		lock.lockInterruptibly();
-		try {
-			if (stateOperation.call()) {
-				condition.signal();
-			}
-		} finally {
-			lock.unlock();
-		}
+    public void broadcastAfter(Callable<Boolean> stateOperation)
+            throws Exception {
+        lock.lockInterruptibly();
+        try {
+            if (stateOperation.call()) {
+                condition.signalAll();
+            }
+        } finally {
+            lock.unlock();
+        }
 
-	}
+    }
 
-	public void broadcastAfter(Callable<Boolean> stateOperation) throws Exception {
-		lock.lockInterruptibly();
-		try {
-			if (stateOperation.call()) {
-				condition.signalAll();
-			}
-		} finally {
-			lock.unlock();
-		}
+    public void signal() throws InterruptedException {
+        lock.lockInterruptibly();
+        try {
+            condition.signal();
 
-	}
+        } finally {
+            lock.unlock();
+        }
 
-	public void signal() throws InterruptedException {
-		lock.lockInterruptibly();
-		try {
-			condition.signal();
-
-		} finally {
-			lock.unlock();
-		}
-
-	}
+    }
 }
