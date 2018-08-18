@@ -22,21 +22,19 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @author Viscent Huang
  *
  */
-public class ReEnqueueRejectedExecutionHandler implements
-    RejectedExecutionHandler {
+public class ReEnqueueRejectedExecutionHandler
+        implements RejectedExecutionHandler {
 
-	@Override
-	public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
-		if (executor.isShutdown()) {
-			return;
-		}
-
-		try {
-			executor.getQueue().put(r);
-		} catch (InterruptedException e) {
-			;
-		}
-
-	}
+    @Override
+    public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+        if (executor.isShutdown()) {
+            return;
+        }
+        try {
+            executor.getQueue().put(r);
+        } catch (InterruptedException e) {
+            ;
+        }
+    }
 
 }
