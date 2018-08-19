@@ -20,25 +20,26 @@ import java.util.concurrent.BlockingQueue;
  * 
  * @author Viscent Huang
  *
- * @param <P> “产品”类型
+ * @param <P>
+ *            “产品”类型
  */
 public class BlockingQueueChannel<P> implements Channel<P> {
-	private final BlockingQueue<P> queue;
+    private final BlockingQueue<P> queue;
 
-	public BlockingQueueChannel(BlockingQueue<P> queue) {
-		this.queue = queue;
-	}
+    public BlockingQueueChannel(BlockingQueue<P> queue) {
+        this.queue = queue;
+    }
 
-	@Override
-	public P take() throws InterruptedException {
+    @Override
+    public P take() throws InterruptedException {
 
-		return queue.take();
-	}
+        return queue.take();
+    }
 
-	@Override
-	public void put(P product) throws InterruptedException {
-		queue.put(product);
+    @Override
+    public void put(P product) throws InterruptedException {
+        queue.put(product);
 
-	}
+    }
 
 }

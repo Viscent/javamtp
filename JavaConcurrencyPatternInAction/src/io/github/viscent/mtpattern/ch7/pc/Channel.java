@@ -19,23 +19,23 @@ package io.github.viscent.mtpattern.ch7.pc;
  * @author Viscent Huang
  *
  * @param <P>
- *          “产品”类型
+ *            “产品”类型
  */
 public interface Channel<P> {
-	/**
-	 * 从通道中取出一个“产品”。
-	 * 
-	 * @return “产品”
-	 * @throws InterruptedException
-	 */
-	P take() throws InterruptedException;
+    /**
+     * 从通道中取出一个“产品”。
+     * 
+     * @return “产品”
+     * @throws InterruptedException
+     */
+    P take() throws InterruptedException;
 
-	/**
-	 * 往通道中存储一个“产品”。
-	 * 
-	 * @param product
-	 *          “产品”
-	 * @throws InterruptedException
-	 */
-	void put(P product) throws InterruptedException;
+    /**
+     * 往通道中存储一个“产品”。
+     * 
+     * @param product
+     *            “产品”
+     * @throws InterruptedException
+     */
+    void put(P product) throws InterruptedException;
 }
