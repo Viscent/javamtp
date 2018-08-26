@@ -77,6 +77,7 @@ public class AttachmentProcessor {
 
     public void saveAttachment(InputStream in, String documentId,
             String originalFileName) throws IOException {
+        // 将附件保存为文件
         File file = saveAsFile(in, documentId, originalFileName);
         try {
             channel.put(file);
