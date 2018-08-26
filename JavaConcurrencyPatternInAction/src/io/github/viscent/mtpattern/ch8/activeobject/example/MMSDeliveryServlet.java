@@ -22,46 +22,51 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import io.github.viscent.util.Debug;
+
 public class MMSDeliveryServlet extends HttpServlet {
 
-	private static final long serialVersionUID = 5886933373599895099L;
+    private static final long serialVersionUID = 5886933373599895099L;
 
-	@Override
-	public void doPost(HttpServletRequest req, HttpServletResponse resp)
-			throws ServletException, IOException {
-		
-		//将请求中的数据解析为内部对象
-		MMSDeliverRequest mmsDeliverReq = this.parseRequest(req.getInputStream());
-		Recipient shortNumberRecipient = mmsDeliverReq.getRecipient();
-		Recipient originalNumberRecipient = null;
+    @Override
+    public void doPost(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
 
-		try {
-			// 将接收方短号转换为长号
-			originalNumberRecipient = convertShortNumber(shortNumberRecipient);
-		} catch (SQLException e) {
+        /*
+         * 将请求中的数据解析为内部对象。 类MMSDeliverRequest、Recipient等源码参见本书的配套下载。
+         */
+        MMSDeliverRequest mmsDeliverReq =
+                this.parseRequest(req.getInputStream());
+        Recipient shortNumberRecipient = mmsDeliverReq.getRecipient();
+        Recipient originalNumberRecipient = null;
 
-			// 接收方短号转换为长号时发生数据库异常，触发请求消息的缓存
-			AsyncRequestPersistence.getInstance().store(mmsDeliverReq);
+        try {
+            // 将接收方短号转换为长号
+            originalNumberRecipient = convertShortNumber(shortNumberRecipient);
+        } catch (SQLException e) {
 
-			//省略其它代码
-			
-			resp.setStatus(202);
-		}
+            // 接收方短号转换为长号时发生数据库异常，触发请求消息的缓存
+            AsyncRequestPersistence.getInstance().store(mmsDeliverReq);
 
-		System.out.println(originalNumberRecipient);
-	}
+            // 省略其他代码
 
-	private MMSDeliverRequest parseRequest(InputStream reqInputStream) {
-		MMSDeliverRequest mmsDeliverReq = new MMSDeliverRequest();
-		//省略其它代码
-		return mmsDeliverReq;
-	}
+            resp.setStatus(202);
+        }
 
-	private Recipient convertShortNumber(Recipient shortNumberRecipient)
-			throws SQLException {
-		Recipient recipent = null;
-		//省略其它代码
-		return recipent;
-	}
+        Debug.info(String.valueOf(originalNumberRecipient));
+    }
+
+    private MMSDeliverRequest parseRequest(InputStream reqInputStream) {
+        MMSDeliverRequest mmsDeliverReq = new MMSDeliverRequest();
+        // 省略其他代码
+        return mmsDeliverReq;
+    }
+
+    private Recipient convertShortNumber(Recipient shortNumberRecipient)
+            throws SQLException {
+        Recipient recipent = null;
+        // 省略其他代码
+        return recipent;
+    }
 
 }

@@ -13,8 +13,9 @@ http://www.broadview.com.cn/27006
 
 package io.github.viscent.mtpattern.ch8.activeobject.example;
 
+import java.io.Closeable;
 
-public interface RequestPersistence {
-
-	 void store(MMSDeliverRequest request);
+public interface RequestPersistence extends Closeable {
+    // 类MMSDeliverRequest的源码参见本书的配套下载。
+    void store(MMSDeliverRequest request);
 }

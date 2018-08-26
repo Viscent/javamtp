@@ -18,94 +18,94 @@ import java.util.Date;
 
 //彩信下发请求
 public class MMSDeliverRequest implements Serializable {
-	private String transactionID;
-	private String messageType = "Delivery.req";
-	private String senderAddress;
-	
-	//彩信消息接收方
-	private Recipient recipient = new Recipient();
-	private String subject;
-	private Attachment attachment = new Attachment();
+    private String transactionID;
+    private String messageType = "Delivery.req";
+    private String senderAddress;
 
-	public long getExpiry() {
-		return expiry;
-	}
+    // 彩信消息接收方
+    private Recipient recipient = new Recipient();
+    private String subject;
+    private Attachment attachment = new Attachment();
 
-	private long expiry;
-	private Date timeStamp;
+    private long expiry;
+    private Date timeStamp;
 
-	public MMSDeliverRequest() {
+    public long getExpiry() {
+        return expiry;
+    }
 
-	}
+    public MMSDeliverRequest() {
 
-	public void setExpiry(long expiry) {
-		this.expiry = expiry;
-	}
+    }
 
-	public Date getTimeStamp() {
-		return timeStamp;
-	}
+    public void setExpiry(long expiry) {
+        this.expiry = expiry;
+    }
 
-	public void setTimeStamp(Date timeStamp) {
-		this.timeStamp = timeStamp;
-	}
+    public Date getTimeStamp() {
+        return timeStamp;
+    }
 
-	public String getTransactionID() {
-		return transactionID;
-	}
+    public void setTimeStamp(Date timeStamp) {
+        this.timeStamp = timeStamp;
+    }
 
-	public void setTransactionID(String transactionID) {
-		this.transactionID = transactionID;
-	}
+    public String getTransactionID() {
+        return transactionID;
+    }
 
-	public String getMessageType() {
-		return messageType;
-	}
+    public void setTransactionID(String transactionID) {
+        this.transactionID = transactionID;
+    }
 
-	public void setMessageType(String messageType) {
-		this.messageType = messageType;
-	}
+    public String getMessageType() {
+        return messageType;
+    }
 
-	public String getSenderAddress() {
-		return senderAddress;
-	}
+    public void setMessageType(String messageType) {
+        this.messageType = messageType;
+    }
 
-	public void setSenderAddress(String senderAddress) {
-		this.senderAddress = senderAddress;
-	}
+    public String getSenderAddress() {
+        return senderAddress;
+    }
 
-	public Recipient getRecipient() {
-		return recipient;
-	}
+    public void setSenderAddress(String senderAddress) {
+        this.senderAddress = senderAddress;
+    }
 
-	public void setRecipient(Recipient recipient) {
-		this.recipient = recipient;
-	}
+    public Recipient getRecipient() {
+        return recipient;
+    }
 
-	public Attachment getAttachment() {
-		return attachment;
-	}
+    public void setRecipient(Recipient recipient) {
+        this.recipient = recipient;
+    }
 
-	public void setAttachment(Attachment attachment) {
-		this.attachment = attachment;
-	}
+    public Attachment getAttachment() {
+        return attachment;
+    }
 
-	public String getSubject() {
-		return subject;
-	}
+    public void setAttachment(Attachment attachment) {
+        this.attachment = attachment;
+    }
 
-	public void setSubject(String subject) {
-		this.subject = subject;
-	}
+    public String getSubject() {
+        return subject;
+    }
 
-	@Override
-	public String toString() {
-		return "MM7DeliverRequest [transactionID=" + transactionID
-		    + ", messageType=" + messageType + ", senderAddress=" + senderAddress
-		    + ", recipient=" + recipient + ", subject=" + subject + ", attachment="
-		    + attachment + "]";
-	}
+    public void setSubject(String subject) {
+        this.subject = subject;
+    }
 
-	private static final long serialVersionUID = 302185079311891797L;
+    @Override
+    public String toString() {
+        return "MM7DeliverRequest [transactionID=" + transactionID
+                + ", messageType=" + messageType + ", senderAddress="
+                + senderAddress + ", recipient=" + recipient + ", subject="
+                + subject + ", attachment=" + attachment + "]";
+    }
+
+    private static final long serialVersionUID = 302185079311891797L;
 
 }

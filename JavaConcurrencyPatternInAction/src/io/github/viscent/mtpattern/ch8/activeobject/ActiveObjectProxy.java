@@ -22,97 +22,92 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 /**
- * Active Object模式的Proxy参与者的可复用实现。
- * 模式角色：ActiveObject.Proxy
+ * Active Object模式的Proxy参与者的可复用实现。 模式角色：ActiveObject.Proxy
+ * 
  * @author Viscent Huang
  */
 public abstract class ActiveObjectProxy {
+    /**
+     * 生成一个实现指定接口的Active Object proxy实例。
+     * 对interf所定义的异步方法的调用会被转发到servant的相应doXXX方法。
+     * 
+     * @param interf
+     *            要实现的Active Object接口
+     * @param servant
+     *            Active Object的Servant参与者实例
+     * @param scheduler
+     *            Active Object的Scheduler参与者实例
+     * @return Active Object的Proxy参与者实例
+     */
+    public static <T> T newInstance(Class<T> interf, Object servant,
+            ExecutorService scheduler) {
 
-	private static class DispatchInvocationHandler implements InvocationHandler {
-		private final Object delegate;
-		private final ExecutorService scheduler;
+        @SuppressWarnings("unchecked")
+        T f = (T) Proxy.newProxyInstance(interf.getClassLoader(),
+                new Class[] { interf },
+                new DispatchInvocationHandler(servant, scheduler));
+        return f;
+    }
+}
 
-		public DispatchInvocationHandler(Object delegate,
-		    ExecutorService executorService) {
-			this.delegate = delegate;
-			this.scheduler = executorService;
-		}
+class DispatchInvocationHandler implements InvocationHandler {
+    private final Object delegate;
+    private final ExecutorService scheduler;
 
-		private String makeDelegateMethodName(final Method method,
-		    final Object[] arg) {
-			String name = method.getName();
-			name = "do" + Character.toUpperCase(name.charAt(0)) + name.substring(1);
+    public DispatchInvocationHandler(Object delegate,
+            ExecutorService executorService) {
+        this.delegate = delegate;
+        this.scheduler = executorService;
+    }
 
-			return name;
-		}
+    private String makeDelegateMethodName(final Method method,
+            final Object[] arg) {
+        String name = method.getName();
+        name = "do" + Character.toUpperCase(name.charAt(0)) + name.substring(1);
 
-		@Override
-		public Object invoke(final Object proxy, final Method method,
-		    final Object[] args) throws Throwable {
+        return name;
+    }
 
-			Object returnValue = null;
-			final Object delegate = this.delegate;
-			final Method delegateMethod;
+    @Override
+    public Object invoke(final Object proxy, final Method method,
+            final Object[] args) throws Throwable {
 
-			// 如果拦截到的被调用方法是异步方法，则将其转发到相应的doXXX方法
-			if (Future.class.isAssignableFrom(method.getReturnType())) {
-				delegateMethod = delegate.getClass().getMethod(
-				    makeDelegateMethodName(method, args), method.getParameterTypes());
+        Object returnValue = null;
+        final Object delegate = this.delegate;
+        final Method delegateMethod;
 
-				final ExecutorService scheduler = this.scheduler;
+        // 如果拦截到的被调用方法是异步方法，则将其转发到相应的doXXX方法
+        if (Future.class.isAssignableFrom(method.getReturnType())) {
+            delegateMethod = delegate.getClass().getMethod(
+                    makeDelegateMethodName(method, args),
+                    method.getParameterTypes());
 
-				Callable<Object> methodRequest = new Callable<Object>() {
-					@Override
-					public Object call() throws Exception {
-						Object rv = null;
+            final ExecutorService scheduler = this.scheduler;
 
-						try {
-							rv = delegateMethod.invoke(delegate, args);
-						} catch (IllegalArgumentException e) {
-							throw new Exception(e);
-						} catch (IllegalAccessException e) {
-							throw new Exception(e);
-						} catch (InvocationTargetException e) {
-							throw new Exception(e);
-						}
-						return rv;
-					}
-				};
-				Future<Object> future = scheduler.submit(methodRequest);
-				returnValue = future;
+            Callable<Object> methodRequest = new Callable<Object>() {
+                @Override
+                public Object call() throws Exception {
+                    Object rv = null;
+                    try {
+                        rv = delegateMethod.invoke(delegate, args);
+                    } catch (IllegalArgumentException | IllegalAccessException
+                            | InvocationTargetException e) {
+                        throw new Exception(e);
+                    }
+                    return rv;
+                }
+            };
+            Future<Object> future = scheduler.submit(methodRequest);
+            returnValue = future;
 
-			} else {
+        } else {
 
-				// 若拦截到的方法调用不是异步方法，则直接转发
-				delegateMethod = delegate.getClass().getMethod(method.getName(),
-				    method.getParameterTypes());
-				returnValue = delegateMethod.invoke(delegate, args);
-			}
+            // 若拦截到的方法调用不是异步方法，则直接转发
+            delegateMethod = delegate.getClass().getMethod(method.getName(),
+                    method.getParameterTypes());
+            returnValue = delegateMethod.invoke(delegate, args);
+        }
 
-			return returnValue;
-		}
-	}
-
-	/**
-	 * 生成一个实现指定接口的Active Object proxy实例。
-	 *  对interf所定义的异步方法的调用会被转发到servant的相应doXXX方法。
-	 * 
-	 * @param interf
-	 *          要实现的Active Object接口
-	 * @param servant
-	 *          Active Object的Servant参与者实例
-	 * @param scheduler
-	 *          Active Object的Scheduler参与者实例
-	 * @return Active Object的Proxy参与者实例
-	 */
-	public static <T> T newInstance(Class<T> interf, Object servant,
-	    ExecutorService scheduler) {
-
-		@SuppressWarnings("unchecked")
-		T f = (T) Proxy.newProxyInstance(interf.getClassLoader(),
-		    new Class[] { interf }, new DispatchInvocationHandler(servant,
-		        scheduler));
-
-		return f;
-	}
+        return returnValue;
+    }
 }
