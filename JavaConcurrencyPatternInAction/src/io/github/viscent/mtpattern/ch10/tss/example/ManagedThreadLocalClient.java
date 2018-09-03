@@ -15,34 +15,36 @@ package io.github.viscent.mtpattern.ch10.tss.example;
 
 //import io.github.viscent.mtpattern.tss.InitialValueProvider;
 import io.github.viscent.mtpattern.ch10.tss.ManagedThreadLocal;
+import io.github.viscent.util.Debug;
 
 public class ManagedThreadLocalClient {
-	private final static ManagedThreadLocal<Integer> mtl = ManagedThreadLocal
-	    .newInstance(new ManagedThreadLocal.InitialValueProvider<Integer>() {
-	    	
-	    	@Override
-		    protected Integer initialValue() {
-			    System.out.println(Thread.currentThread().getName());
-			    return Integer.valueOf((int) Thread.currentThread().getId());
-		    }
+    final static ManagedThreadLocal<Long> mtl;
+    static {
+        mtl = new ManagedThreadLocal<Long>() {
+            @Override
+            protected Long initialValue() {
+                Debug.info(Thread.currentThread().getName());
+                return Thread.currentThread().getId();
+            }
 
-	    });
+        };
+    }
 
-	public static void main(String[] args) {
-		for (int i = 0; i < 3; i++) {
-			new Helper().start();
-		}
+    public static void main(String[] args) {
+        for (int i = 0; i < 3; i++) {
+            new Helper().start();
+        }
 
-	}
+    }
 
-	static class Helper extends Thread {
+    static class Helper extends Thread {
 
-		@Override
-		public void run() {
+        @Override
+        public void run() {
 
-			System.out.println(mtl.get());
-		}
+            Debug.info("Thread Id:%d", mtl.get());
+        }
 
-	}
+    }
 
 }
