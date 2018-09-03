@@ -14,86 +14,65 @@ http://www.broadview.com.cn/27006
 package io.github.viscent.mtpattern.ch10.tss;
 
 import java.lang.ref.WeakReference;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.AbstractMap.SimpleEntry;
 
 /**
- * 支持统一清理不再被使用的ThreadLocal变量的ThreadLocal子类。
+ * 能够避免内存泄漏的ThreadLocal子类。
  * 
  * @author Viscent Huang
  * 
- * @param <T> 相应的线程特有对象类型
+ * @param <T>
+ *            相应的线程特有对象类型
  */
 public class ManagedThreadLocal<T> extends ThreadLocal<T> {
+    private final ThreadLocal<SimpleEntry<String, T>> storageHelper;
+    private volatile WeakReference<SimpleEntry<String, ?>> wrTSOWrapper;
 
-	/*
-	 * 使用弱引用，防止内存泄漏。
-	 * 使用volatile修饰保证内存可见性。
-	 */
-	private static volatile Queue<WeakReference<ManagedThreadLocal<?>>> instances = new ConcurrentLinkedQueue<WeakReference<ManagedThreadLocal<?>>>();
+    {
+        storageHelper = new ThreadLocal<SimpleEntry<String, T>>() {
+            @Override
+            protected SimpleEntry<String, T> initialValue() {
+                SimpleEntry<String, T> tsoWrapper = new SimpleEntry<>(null,
+                        null);
+                wrTSOWrapper = new WeakReference<SimpleEntry<String, ?>>(
+                        tsoWrapper);
+                return tsoWrapper;
+            }
+        };
 
-	private volatile ThreadLocal<T> threadLocal;
+    }
 
-	private ManagedThreadLocal(final InitialValueProvider<T> ivp) {
+    @Override
+    public T get() {
+        // entry是一个线程特有对象
+        SimpleEntry<String, T> entry = storageHelper.get();
+        T v = entry.getValue();
+        if (null == v) {
+            v = this.initialValue();
+            entry.setValue(v);
+        }
+        return v;
+    }
 
-		this.threadLocal = new ThreadLocal<T>() {
+    @Override
+    public void set(T value) {
+        SimpleEntry<String, T> entry = storageHelper.get();
+        // 对线程特有对象进行更新操作无需使用任何线程同步措施
+        entry.setValue(value);
+    }
 
-			@Override
-			protected T initialValue() {
-				return ivp.initialValue();
-			}
+    @Override
+    public void remove() {
+        storageHelper.remove();
+    }
 
-		};
-	}
-
-	public static <T> ManagedThreadLocal<T> newInstance(
-	    final InitialValueProvider<T> ivp) {
-		ManagedThreadLocal<T> mtl = new ManagedThreadLocal<T>(ivp);
-
-		// 使用弱引用来引用ThreadLocalProxy实例，防止内存泄漏。
-		instances.add(new WeakReference<ManagedThreadLocal<?>>(mtl));
-		return mtl;
-	}
-	
-	public static <T> ManagedThreadLocal<T> newInstance() {
-		return newInstance(new ManagedThreadLocal.InitialValueProvider<T>());
-	}
-
-	public T get() {
-		return threadLocal.get();
-	}
-
-	public void set(T value) {
-		threadLocal.set(value);
-	}
-
-	public void remove() {
-		if (null != threadLocal) {
-			threadLocal.remove();
-			threadLocal = null;
-		}
-	}
-
-	/**
-	 * 清理该类所管理的所有ThreadLocal实例。
-	 */
-	public static void removeAll() {
-		WeakReference<ManagedThreadLocal<?>> wrMtl;
-		ManagedThreadLocal<?> mtl;
-		while (null != (wrMtl = instances.poll())) {
-			mtl = wrMtl.get();
-			if (null != mtl) {
-				mtl.remove();
-			}
-		}
-	}
-
-	public static class InitialValueProvider<T> {
-		protected T initialValue(){
-			
-			//默认值为null
-			return null;
-		}
-	}
-
+    public void destroy() {
+        final WeakReference<SimpleEntry<String, ?>> wrTSOWrapper = this.wrTSOWrapper;
+        if (null != wrTSOWrapper) {
+            SimpleEntry<String, ?> entry = wrTSOWrapper.get();
+            if (null != entry) {
+                entry.setValue(null);
+            }
+        }
+    }
 }
