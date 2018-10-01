@@ -14,59 +14,76 @@ http://www.broadview.com.cn/27006
 package io.github.viscent.mtpattern.ch12.ms.example;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import io.github.viscent.util.Tools;
+
 /**
- * 本章实战案例运行时所需的接口日志文件可以使用以下类生成：
- * io.github.viscent.mtpattern.ch12.ms.example.testdatagen.TestingDataGen
  * 
  * @author Viscent Huang
  *
  */
 public class CaseRunner {
 
-	public static void main(String[] args) throws Exception {
+    public static void main(String[] args) throws Exception {
+        String strLogFileBaseDir = System.getProperty("java.io.tmpdir")
+                + "/tps/";
 
-		String logFileBaseDir = System.getProperty("java.io.tmpdir") + "/tps/";
-		final Pattern pattern;
+        // 解压缩程序所需的测试数据
+        InputStream dataIn =
+                CaseRunner.class.getClassLoader()
+                        .getResourceAsStream("data/ch12/ifl.zip");
+        Tools.unzip(dataIn, strLogFileBaseDir);
 
-		String matchingRegExp;
+        final Pattern pattern;
+        String matchingRegExp;
 
-		// 用于选择要进行统计的接口日志文件的正则表达式，请根据实际情况修改。
-		matchingRegExp = "20150420131[0-9]";
+        // 用于选择要进行统计的接口日志文件的正则表达式，请根据实际情况修改。
+        // ESB_interface_20180701
+        // 2018070113
+        // 20150420131
+        // matchingRegExp = "20150420131[0-9]";
+        matchingRegExp = "201807011[0-9]*";
+        // matchingRegExp = "201807011[2-4]*";
 
-		pattern = Pattern.compile("ESB_interface_" + matchingRegExp + ".log");
-		PipedInputStream pipeIn = new PipedInputStream();
-		final PipedOutputStream pipeOut = new PipedOutputStream(pipeIn);
+        pattern = Pattern.compile("ESB_interface_" + matchingRegExp + ".log");
+        PipedInputStream pipeIn = new PipedInputStream();
+        final PipedOutputStream pipeOut = new PipedOutputStream(pipeIn);
 
-		File dir = new File(logFileBaseDir);
-		dir.list(new FilenameFilter() {
-			@Override
-			public boolean accept(File dir, String name) {
-				Matcher matcher = pattern.matcher(name);
-				boolean toAccept = matcher.matches();
-				if (toAccept) {
-					try {
+        // 创建并启动工作者线程，用于输出待统计的日志文件的文件名列表
+        Thread thread = new Thread(() -> {
+            new File(strLogFileBaseDir).list((dir, name) -> {
+                Matcher matcher = pattern.matcher(name);
+                boolean toAccept = matcher.matches();
+                if (toAccept) {
+                    try {
+                        // 向TPSStat输出待统计的接口日志文件名
+                        pipeOut.write((name + "\n").getBytes());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                return toAccept;
+            });
 
-						// 向TPSStat输出待统计的接口日志文件名
-						pipeOut.write((name + "\n").getBytes());
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-				return toAccept;
-			}
-		});
-
-		pipeOut.flush();
-		pipeOut.close();
-		System.setIn(pipeIn);
-		TPSStat.main(new String[] { logFileBaseDir });
-	}
+            try {
+                pipeOut.flush();
+                pipeOut.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        thread.start();
+        /*
+         * 将待统计的日志文件的文件列表通过输入流的形式传递给统计程序TPSStat， 这相当于在Linux下使用管道符“|”所产生的效果。
+         */
+        System.setIn(pipeIn);
+        TPSStat.main(new String[] { strLogFileBaseDir });
+    }
 
 }
