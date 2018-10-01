@@ -13,117 +13,138 @@ http://www.broadview.com.cn/27006
 
 package io.github.viscent.mtpattern.ch13.pipeline.example;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.regex.Pattern;
 
 public class Record {
-	private int id;
-	private String productId;
-	private String packageId;
-	private String msisdn;
-	
+    // 2014-08-10 12:58:08.0
+    private static final SimpleDateFormat sdf = new SimpleDateFormat(
+            "yyyy-MM-dd hh:mm:ss.S");
+    private static final Pattern PATTERN_COMMA = Pattern.compile(",");
+    private int id;
+    private String productId;
+    private String packageId;
+    private String msisdn;
 
-	private Date operationTime;
-	private Date effectiveDate;
-	private Date dueDate;
+    private Date operationTime;
+    private Date effectiveDate;
+    private Date dueDate;
 
-	private int operationType;
-	
-	public int targetFileIndex;
+    private int operationType;
 
-	public int getId() {
-		return id;
-	}
+    public int targetFileIndex;
 
-	public void setId(int id) {
-		this.id = id;
-	}
+    public int getId() {
+        return id;
+    }
 
-	public String getProductId() {
-		return productId;
-	}
+    public void setId(int id) {
+        this.id = id;
+    }
 
-	public void setProductId(String productId) {
-		this.productId = productId;
-	}
+    public String getProductId() {
+        return productId;
+    }
 
-	public String getPackageId() {
-		return packageId;
-	}
+    public void setProductId(String productId) {
+        this.productId = productId;
+    }
 
-	public void setPackageId(String packageId) {
-		this.packageId = packageId;
-	}
+    public String getPackageId() {
+        return packageId;
+    }
 
-	public String getMsisdn() {
-		return msisdn;
-	}
+    public void setPackageId(String packageId) {
+        this.packageId = packageId;
+    }
 
-	public void setMsisdn(String msisdn) {
-		this.msisdn = msisdn;
-	}
+    public String getMsisdn() {
+        return msisdn;
+    }
 
-	public Date getOperationTime() {
-		return operationTime;
-	}
+    public void setMsisdn(String msisdn) {
+        this.msisdn = msisdn;
+    }
 
-	public void setOperationTime(Date operationTime) {
-		this.operationTime = operationTime;
-	}
+    public Date getOperationTime() {
+        return operationTime;
+    }
 
-	public int getOperationType() {
-		return operationType;
-	}
+    public void setOperationTime(Date operationTime) {
+        this.operationTime = operationTime;
+    }
 
-	public void setOperationType(int operationType) {
-		this.operationType = operationType;
-	}
+    public int getOperationType() {
+        return operationType;
+    }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + id;
-		return result;
-	}
+    public void setOperationType(int operationType) {
+        this.operationType = operationType;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Record other = (Record) obj;
-		if (id != other.id)
-			return false;
-		return true;
-	}
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + id;
+        return result;
+    }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Record other = (Record) obj;
+        if (id != other.id)
+            return false;
+        return true;
+    }
 
+    public Date getEffectiveDate() {
+        return effectiveDate;
+    }
 
-	public Date getEffectiveDate() {
-		return effectiveDate;
-	}
+    public void setEffectiveDate(Date effectiveDate) {
+        this.effectiveDate = effectiveDate;
+    }
 
-	public void setEffectiveDate(Date effectiveDate) {
-		this.effectiveDate = effectiveDate;
-	}
+    public Date getDueDate() {
+        return dueDate;
+    }
 
-	public Date getDueDate() {
-		return dueDate;
-	}
+    public void setDueDate(Date dueDate) {
+        this.dueDate = dueDate;
+    }
 
-	public void setDueDate(Date dueDate) {
-		this.dueDate = dueDate;
-	}
+    public static Record parseCsv(String line) throws ParseException {
+        String[] arr = PATTERN_COMMA.split(line);
+        Record ret = new Record();
+        // ID PRODUCTID PACKAGEID MSISDN OPERATIONTIME EFFECTIVEDATE DUEDATE
+        // OPERATIONTYPE
+        ret.setId(Integer.valueOf(arr[0]));
+        ret.setProductId(arr[1]);
+        ret.setPackageId(arr[2]);
+        ret.setMsisdn(arr[3]);
+        ret.setOperationTime(sdf.parse(arr[4]));
+        ret.setEffectiveDate(sdf.parse(arr[5]));
+        ret.setDueDate(sdf.parse(arr[6]));
+        ret.setOperationType(Integer.valueOf(arr[7]));
+        return ret;
+    }
 
-	@Override
-  public String toString() {
-	  return "Record [id=" + id + ", productId=" + productId + ", packageId="
-	      + packageId + ", msisdn=" + msisdn + ", operationTime=" + operationTime
-	      + ", effectiveDate=" + effectiveDate + ", dueDate=" + dueDate
-	      + ", operationType=" + operationType + "]";
-  }
+    @Override
+    public String toString() {
+        return "Record [id=" + id + ", productId=" + productId + ", packageId="
+                + packageId + ", msisdn=" + msisdn + ", operationTime="
+                + operationTime
+                + ", effectiveDate=" + effectiveDate + ", dueDate=" + dueDate
+                + ", operationType=" + operationType + "]";
+    }
 
 }
