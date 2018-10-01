@@ -19,18 +19,18 @@ package io.github.viscent.mtpattern.ch11.stc;
  * @author Viscent Huang
  *
  * @param <T>
- *          表示任务的类型
+ *            表示任务的类型
  * @param <V>
- *          表示任务处理结果的类型
+ *            表示任务处理结果的类型
  */
 public interface TaskProcessor<T, V> {
-	/**
-	 * 对指定任务进行处理。
-	 * 
-	 * @param task
-	 *          任务
-	 * @return 任务处理结果
-	 * @throws Exception
-	 */
-	V doProcess(T task) throws Exception;
+    /**
+     * 对指定任务进行处理。
+     * 
+     * @param task
+     *            任务
+     * @return 任务处理结果
+     * @throws Exception
+     */
+    V doProcess(T task) throws Exception;
 }
