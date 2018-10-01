@@ -20,62 +20,86 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import io.github.viscent.util.Debug;
+import io.github.viscent.util.Tools;
+
 public class DataSyncTask implements Runnable {
-	private final Map<String, String> taskParameters;
+    private final Map<String, String> taskParameters;
 
-	public DataSyncTask(Map<String, String> taskParameters) {
-		this.taskParameters = taskParameters;
-	}
+    public DataSyncTask(Map<String, String> taskParameters) {
+        this.taskParameters = taskParameters;
+    }
 
-	@Override
-	public void run() {
-		String ftpServer = taskParameters.get("server");
-		String ftpUserName = taskParameters.get("userName");
-		String password = taskParameters.get("password");
-		
-		//先开始初始化FTP客户端实例
-		Future<FTPClientUtil> ftpClientUtilPromise = FTPClientUtil.newInstance(
-		    ftpServer, ftpUserName, password);
+    @Override
+    public void run() {
+        String ftpServer = taskParameters.get("server");
+        String ftpUserName = taskParameters.get("userName");
+        String password = taskParameters.get("password");
+        String serverDir = taskParameters.get("serverDir");
 
-		//查询数据库生成本地文件
-		generateFilesFromDB();
+        /*
+         * 接口FTPUploader用于对FTP客户端进行抽象，其源码参见本书配套下载。
+         */
+        // 初始化FTP客户端实例
+        Future<FTPUploader> ftpClientUtilPromise =
+                FTPUploaderPromisor.newFTPUploaderPromise(ftpServer,
+                        ftpUserName, password, serverDir);
 
-		FTPClientUtil ftpClientUtil = null;
-		try {
-			// 获取初始化完毕的FTP客户端实例
-			ftpClientUtil = ftpClientUtilPromise.get();
-		} catch (InterruptedException e) {
-			;
-		} catch (ExecutionException e) {
-			throw new RuntimeException(e);
-		}
-		
-		// 上传文件
-		uploadFiles(ftpClientUtil);
-		
-		//省略其它代码
-	}
+        // 查询数据库生成本地文件
+        generateFilesFromDB();
 
-	private void generateFilesFromDB() {
-		// 省略其它代码
-	}
+        FTPUploader ftpClientUtil = null;
+        try {
+            // 获取初始化完毕的FTP客户端实例
+            ftpClientUtil = ftpClientUtilPromise.get();
+        } catch (InterruptedException e) {
+            ;
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        }
 
-	private void uploadFiles(FTPClientUtil ftpClientUtil) {
-		Set<File> files = retrieveGeneratedFiles();
-		for (File file : files) {
-			try {
-				ftpClientUtil.upload(file);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
+        // 上传文件
+        uploadFiles(ftpClientUtil);
 
-	}
+        // 省略其他代码
+    }
 
-	private Set<File> retrieveGeneratedFiles() {
-		Set<File> files = new HashSet<File>();
-		// 省略其它代码
-		return files;
-	}
+    private void generateFilesFromDB() {
+        Debug.info("generating files from database...");
+
+        // 模拟实际操作所需的耗时
+        Tools.randomPause(1000, 500);
+
+        // 省略其他代码
+    }
+
+    private void uploadFiles(FTPUploader ftpClientUtil) {
+        Set<File> files = retrieveGeneratedFiles();
+        for (File file : files) {
+            try {
+                ftpClientUtil.upload(file);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
+    protected Set<File> retrieveGeneratedFiles() {
+        Set<File> files = new HashSet<File>();
+
+        // 模拟生成本地文件
+        File currDir =
+                new File(Tools.getWorkingDir(
+                        "../classes/io/github/viscent/mtpattern/ch6/promise/example"));
+        for (File f : currDir.listFiles(
+                (dir, name) -> new File(dir, name).isFile()
+                        && name.endsWith(".class"))) {
+            files.add(f);
+        }
+
+        // 省略其他代码
+        return files;
+    }
 
 }

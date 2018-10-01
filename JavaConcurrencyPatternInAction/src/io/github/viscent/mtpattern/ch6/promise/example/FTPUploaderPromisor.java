@@ -18,9 +18,11 @@ public class FTPUploaderPromisor {
                 t.start();
             }
         };
-        return newFTPUploaderPromise(ftpServer,ftpUserName,password,serverDir,helperExecutor);
+        return newFTPUploaderPromise(
+                ftpServer, ftpUserName, password, serverDir, helperExecutor);
     }
 
+    // 模式角色：Promise.Promisor.compute
     public static Future<FTPUploader> newFTPUploaderPromise(String ftpServer,
             String ftpUserName, String password, String serverDir,
             Executor helperExecutor) {
@@ -29,15 +31,16 @@ public class FTPUploaderPromisor {
             @Override
             public FTPUploader call() throws Exception {
                 String implClazz = System.getProperty("ftp.client.impl");
+                // 类FTPClientUtil的源码参见本书配套下载
                 if (null == implClazz) {
                     implClazz =
-                            "io.github.viscent.mtpattern.ch6.promise.example.FTPClientUtil";
+                            "io.github.viscent.mtpattern.ch6.promise.example"
+                                    + ".FTPClientUtil";
                 }
-                FTPUploader self;
-                self = (FTPUploader) Class.forName(implClazz).newInstance();
-                // self = new FTPClientUtil();
-                self.init(ftpServer, ftpUserName, password, serverDir);
-                return self;
+                FTPUploader ftpUploader;
+                ftpUploader = (FTPUploader) Class.forName(implClazz).newInstance();
+                ftpUploader.init(ftpServer, ftpUserName, password, serverDir);
+                return ftpUploader;
             }
 
         };
