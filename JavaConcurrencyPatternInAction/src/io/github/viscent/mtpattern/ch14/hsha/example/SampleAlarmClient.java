@@ -70,13 +70,13 @@ public class SampleAlarmClient {
 	private Connection retrieveDBConnection() throws Exception {
 		Connection cnn = null;
 
-		// 省略其它代码
+		// 省略其他代码
 
 		return cnn;
 	}
 
 	private void doSomething(Connection conn) {
-		// 省略其它代码
+		// 省略其他代码
 	}
 
 }
