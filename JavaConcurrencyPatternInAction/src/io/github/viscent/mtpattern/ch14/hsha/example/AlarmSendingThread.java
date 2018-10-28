@@ -24,7 +24,7 @@ import io.github.viscent.mtpattern.ch5.tpt.example.AlarmType;
 
 /*
  * 告警发送线程。
- * 模式角色：HalfSync/HalfAsync.AsyncTask
+ * 模式角色：HalfSync/HalfAsync.SyncTask
  * 模式角色：Two-phaseTermination.ConcreteTerminatableThread
  */
 public class AlarmSendingThread extends AbstractTerminatableThread {
